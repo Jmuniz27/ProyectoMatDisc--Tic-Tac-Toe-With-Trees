@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, state, player, move=None):
+    def _init_(self, state, player, move=None):
         self.state = state  # El estado del tablero
         self.player = player  # El jugador que hizo el último movimiento
         self.move = move  # El movimiento que llevó a este estado
@@ -73,38 +73,79 @@ def build_game_tree(state, player):
                 new_state = [row[:] for row in state]
                 new_state[i][j] = player
                 child_node = build_game_tree(new_state, next_player)
+                child_node.move = (i, j)  # Guardar el movimiento que llevó a este estado
                 root.add_child(child_node)
 
     return root
 
-def get_best_move(root):
+def ai_move(state):
+    # Construye el árbol de juego para el estado actual
+    game_tree = build_game_tree(state, 'O')
+
+    # Encuentra el mejor movimiento para la IA
     best_move = None
     best_score = -float('inf')
 
-    for child in root.children:
+    for child in game_tree.children:
         score = minimax(child, False)
         if score > best_score:
             best_score = score
             best_move = child.move
 
-    return best_move
+    # Realiza el mejor movimiento en el tablero
+    if best_move:
+        row, col = best_move
+        state[row][col] = 'O'
+        return best_move
+    return None
 
-# Uso
-initial_state = [['', '', ''],
-                 ['', '', ''],
-                 ['', '', '']]
+def player_move(state):
+    while True:
+        try:
+            row = int(input("Ingresa la fila (0, 1, 2): "))
+            col = int(input("Ingresa la columna (0, 1, 2): "))
+            if state[row][col] == '':
+                state[row][col] = 'X'
+                return
+            else:
+                print("La casilla ya está ocupada, intenta de nuevo.")
+        except (IndexError, ValueError):
+            print("Entrada no válida, intenta de nuevo.")
 
-# Construye el árbol de juego a partir del estado inicial
-game_tree = build_game_tree(initial_state, 'O')
+def play_game():
+    state = [['', '', ''],
+             ['', '', ''],
+             ['', '', '']]
+    
+    print("¡Bienvenido a Tic-Tac-Toe! Eres el jugador 'X'.")
+    print_board(state)
+    
+    while True:
+        # Turno del jugador humano
+        player_move(state)
+        print("Tu movimiento:")
+        print_board(state)
+        
+        # Verificar si el jugador humano ha ganado
+        if check_winner(state):
+            print(f"¡El jugador {check_winner(state)} ha ganado!")
+            break
+        elif is_board_full(state):
+            print("Es un empate.")
+            break
 
-# Encuentra el mejor movimiento usando el árbol
-best_move = None
-best_score = -float('inf')
+        # Turno de la IA
+        print("Turno de la IA:")
+        ai_move(state)
+        print_board(state)
 
-for child in game_tree.children:
-    score = minimax(child, False)
-    if score > best_score:
-        best_score = score
-        best_move = child.move
+        # Verificar si la IA ha ganado
+        if check_winner(state):
+            print(f"¡El jugador {check_winner(state)} ha ganado!")
+            break
+        elif is_board_full(state):
+            print("Es un empate.")
+            break
 
-print(f"El mejor movimiento para 'O' es: {best_move}")
+# Inicia el juego
+play_game()
