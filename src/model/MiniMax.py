@@ -2,6 +2,8 @@ from interface.pruebaCam import main
 import cv2
 import numpy as np
 import time
+from anytree import NodeMixin, RenderTree
+from anytree.exporter import DotExporter
 class Node:
     def __init__(self, state, player, move=None):
         self.state = state
