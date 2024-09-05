@@ -2,17 +2,6 @@ import cv2
 import numpy as np
 import time
 
-# Función para capturar una imagen desde la cámara y esperar 2 segundos
-def capturar_imagen():
-    cam = cv2.VideoCapture(0)  # Usar la cámara (índice 0)
-    time.sleep(1)  # Esperar 2 segundos para que la cámara se estabilice
-    ret, frame = cam.read()  # Capturar un frame
-    cam.release()  # Liberar la cámara
-    if not ret:
-        print("No se pudo capturar la imagen")
-        return None
-    return frame
-
 # Función auxiliar para determinar si un contorno es circular (O)
 def es_circulo(contorno):
     area = cv2.contourArea(contorno)
@@ -35,71 +24,82 @@ def es_borde_de_celda(contorno, cell_width, cell_height, margen=5):
         return True
     return False
 
-# Procesar la imagen capturada
+# Procesar la imagen capturada y detectar el tablero
 def procesar_imagen(imagen):
+    # Convertir a escala de grises
     gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (15, 15), 0)
+    
+    # Aplicar umbral adaptativo para resaltar el tablero
     thresh = cv2.adaptiveThreshold(blur, 255, 1, 1, 11, 2)
 
     contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    for cont in contours:
-        area = cv2.contourArea(cont)
-        if area > 1700:
-            cv2.drawContours(imagen, [cont], -1, (0, 255, 0), 3)
-
     max_contour = max(contours, key=cv2.contourArea)
-    cv2.drawContours(imagen, [max_contour], -1, (0, 255, 0), 3)
     x, y, w, h = cv2.boundingRect(max_contour)
     tablero = thresh[y:y+h, x:x+w]
 
+    # Definir dimensiones de las celdas para una matriz 3x3
     cell_height = h // 3
     cell_width = w // 3
+
     tic_tac_toe_matrix = [['' for _ in range(3)] for _ in range(3)]
 
+    # Iterar sobre las celdas y detectar si hay "X" o "O"
     for row in range(3):
         for col in range(3):
             cell = tablero[row * cell_height:(row + 1) * cell_height, col * cell_width:(col + 1) * cell_width]
             cell_contours, _ = cv2.findContours(cell, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             relevant_contours = [c for c in cell_contours if 500 < cv2.contourArea(c) < 50000 and not es_borde_de_celda(c, cell_width, cell_height)]
 
-            if len(relevant_contours) == 0:
-                tic_tac_toe_matrix[row][col] = ''
-            else:
+            if len(relevant_contours) > 0:
                 circulos = [es_circulo(c) for c in relevant_contours]
                 if circulos.count(True) >= 1:
                     tic_tac_toe_matrix[row][col] = 'O'
                 elif any(es_x(c) for c in relevant_contours):
                     tic_tac_toe_matrix[row][col] = 'X'
-                else:
-                    tic_tac_toe_matrix[row][col] = ''
 
-    return imagen, tablero, tic_tac_toe_matrix
+    return tablero, tic_tac_toe_matrix
 
-# Capturar y procesar la imagen en un bucle
+# Función principal que mantiene la matriz constante hasta que hay un cambio y toma una captura cada 1.5 segundos
 def main():
+    cam = cv2.VideoCapture(0)  # Abrir la cámara
+    matriz_anterior = None
+    ultimo_tiempo_captura = time.time()
+
     while True:
-        imagen = capturar_imagen()
+        ret, frame = cam.read()  # Leer el frame de la cámara
+        if not ret:
+            print("No se pudo capturar la imagen")
+            break
 
-        if imagen is not None:
-            imagen_procesada, tablero, matriz = procesar_imagen(imagen)
+        # Efecto espejo y rotación de 90 grados a la derecha
+        frame = cv2.flip(frame, 1)  # Quitar el efecto espejo
+        frame = cv2.flip(frame, 1)  # Quitar el efecto espejo
+        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)  # Rotar 90 grados
 
-            # Mostrar el frame capturado
-            print("Frame capturado:")
-            cv2.imshow("Imagen Procesada", imagen_procesada)
+        # Mostrar la cámara en vivo
+        cv2.imshow("Cámara en Vivo", frame)
 
-            # Mostrar el tablero detectado
-            print("Tablero detectado:")
-            cv2.imshow("Tablero", tablero)
+        # Verificar si han pasado 1.5 segundos para tomar una captura y procesar
+        if time.time() - ultimo_tiempo_captura >= 1.5:
+            ultimo_tiempo_captura = time.time()  # Actualizar el tiempo de la última captura
 
-            # Imprimir la matriz del juego
-            print("Matriz Tic-Tac-Toe:")
-            for fila in matriz:
-                print(fila)
+            # Procesar la imagen para detectar la matriz
+            tablero, matriz_actual = procesar_imagen(frame)
 
-            # Esperar 2 segundos y permitir que se presione 'q' para salir
-            if cv2.waitKey(2000) & 0xFF == ord('q'):
-                break
+            if matriz_actual is not None:
+                if matriz_anterior is None or matriz_actual != matriz_anterior:
+                    # Si hay un cambio en la matriz o es la primera detección
+                    matriz_anterior = matriz_actual
+                    print("Matriz Tic-Tac-Toe:")
+                    for fila in matriz_actual:
+                        print(fila)
 
+        # Salir si se presiona 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cam.release()  # Liberar la cámara
     cv2.destroyAllWindows()  # Cerrar todas las ventanas
 
 if __name__ == "__main__":
