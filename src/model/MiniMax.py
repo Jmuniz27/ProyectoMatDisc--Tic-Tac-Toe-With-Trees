@@ -1,10 +1,14 @@
+from interface.pruebaCam import main
+import cv2
+import numpy as np
+import time
 class Node:
-    def _init_(self, state, player, move=None):
-        self.state = state  # El estado del tablero
-        self.player = player  # El jugador que hizo el último movimiento
-        self.move = move  # El movimiento que llevó a este estado
-        self.children = []  # Hijos de este nodo
-        self.score = None  # El puntaje evaluado por Minimax para este nodo
+    def __init__(self, state, player, move=None):
+        self.state = state
+        self.player = player
+        self.move = move
+        self.children = []
+        self.score = None
 
     def add_child(self, child_node):
         self.children.append(child_node)
@@ -99,30 +103,23 @@ def ai_move(state):
         return best_move
     return None
 
-def player_move(state):
-    while True:
-        try:
-            row = int(input("Ingresa la fila (0, 1, 2): "))
-            col = int(input("Ingresa la columna (0, 1, 2): "))
-            if state[row][col] == '':
-                state[row][col] = 'X'
-                return
-            else:
-                print("La casilla ya está ocupada, intenta de nuevo.")
-        except (IndexError, ValueError):
-            print("Entrada no válida, intenta de nuevo.")
+def player_move(state, cam):
+    main(state,cam)
 
 def play_game():
     state = [['', '', ''],
              ['', '', ''],
              ['', '', '']]
-    
+    cam = cv2.VideoCapture(0)  # Abrir la cámara una vez, al inicio del juego
+    if not cam.isOpened():
+        print("No se pudo abrir la cámara.")
+        return
     print("¡Bienvenido a Tic-Tac-Toe! Eres el jugador 'X'.")
     print_board(state)
     
     while True:
         # Turno del jugador humano
-        player_move(state)
+        player_move(state,cam)
         print("Tu movimiento:")
         print_board(state)
         
@@ -146,6 +143,8 @@ def play_game():
         elif is_board_full(state):
             print("Es un empate.")
             break
+    cam.release()  # Liberar la cámara al finalizar
+    cv2.destroyAllWindows()  # Cerrar todas las ventanas
 
 # Inicia el juego
 play_game()

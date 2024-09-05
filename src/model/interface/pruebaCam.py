@@ -61,46 +61,41 @@ def procesar_imagen(imagen):
     return tablero, tic_tac_toe_matrix
 
 # Función principal que mantiene la matriz constante hasta que hay un cambio y toma una captura cada 1.5 segundos
-def main():
-    cam = cv2.VideoCapture(0)  # Abrir la cámara
-    matriz_anterior = None
-    ultimo_tiempo_captura = time.time()
-
+def main(state,cam):
     while True:
         ret, frame = cam.read()  # Leer el frame de la cámara
         if not ret:
             print("No se pudo capturar la imagen")
-            break
+            continue
 
         # Efecto espejo y rotación de 90 grados a la derecha
-        frame = cv2.flip(frame, 1)  # Quitar el efecto espejo
-        frame = cv2.flip(frame, 1)  # Quitar el efecto espejo
-        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)  # Rotar 90 grados
+        frame = cv2.flip(frame, 1)
+        frame = cv2.flip(frame, 1)
+        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
 
         # Mostrar la cámara en vivo
-        cv2.imshow("Cámara en Vivo", frame)
+        cv2.imshow("Cámara en Vivo - Presiona 'c' para confirmar el movimiento", frame)
 
-        # Verificar si han pasado 1.5 segundos para tomar una captura y procesar
-        if time.time() - ultimo_tiempo_captura >= 1.5:
-            ultimo_tiempo_captura = time.time()  # Actualizar el tiempo de la última captura
-
-            # Procesar la imagen para detectar la matriz
+        # Esperar que el usuario confirme el movimiento presionando 'c'
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('c'):
+            # Procesar la imagen para detectar la matriz del tablero
             tablero, matriz_actual = procesar_imagen(frame)
 
-            if matriz_actual is not None:
-                if matriz_anterior is None or matriz_actual != matriz_anterior:
-                    # Si hay un cambio en la matriz o es la primera detección
-                    matriz_anterior = matriz_actual
-                    print("Matriz Tic-Tac-Toe:")
-                    for fila in matriz_actual:
-                        print(fila)
+            # Asegurarse de que la matriz detectada es 3x3
+            if matriz_actual is not None and len(matriz_actual) == 3 and all(len(row) == 3 for row in matriz_actual):
+                # Asegurarse de que la matriz contiene solo valores simples
+                for i in range(3):
+                    for j in range(3):
+                        # Verificar que matriz_actual sea válida antes de acceder a sus elementos
+                        if isinstance(matriz_actual[i][j], str):  # Solo compara si es un string
+                            if matriz_actual[i][j] == 'X' and state[i][j] == '':
+                                state[i][j] = 'X'
+                break
+            else:
+                print("No se detectó un tablero 3x3 correctamente. Intenta nuevamente.")
+                continue  # Vuelve a solicitar la confirmación del movimiento
 
-        # Salir si se presiona 'q'
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        elif key == ord('q'):
             break
 
-    cam.release()  # Liberar la cámara
-    cv2.destroyAllWindows()  # Cerrar todas las ventanas
-
-if __name__ == "__main__":
-    main()
