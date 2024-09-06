@@ -1,9 +1,6 @@
-from interface.pruebaCam import main
 import cv2
-import numpy as np
-import time
-from anytree import NodeMixin, RenderTree
-from anytree.exporter import DotExporter
+from interface.pruebaCam import main
+
 class Node:
     def __init__(self, state, player, move=None):
         self.state = state
@@ -79,16 +76,13 @@ def build_game_tree(state, player):
                 new_state = [row[:] for row in state]
                 new_state[i][j] = player
                 child_node = build_game_tree(new_state, next_player)
-                child_node.move = (i, j)  # Guardar el movimiento que llevó a este estado
+                child_node.move = (i, j)  
                 root.add_child(child_node)
 
     return root
 
 def ai_move(state):
-    # Construye el árbol de juego para el estado actual
     game_tree = build_game_tree(state, 'O')
-
-    # Encuentra el mejor movimiento para la IA
     best_move = None
     best_score = -float('inf')
 
@@ -98,7 +92,6 @@ def ai_move(state):
             best_score = score
             best_move = child.move
 
-    # Realiza el mejor movimiento en el tablero
     if best_move:
         row, col = best_move
         state[row][col] = 'O'
@@ -106,47 +99,4 @@ def ai_move(state):
     return None
 
 def player_move(state, cam):
-    main(state,cam)
-
-def play_game():
-    state = [['', '', ''],
-             ['', '', ''],
-             ['', '', '']]
-    cam = cv2.VideoCapture(0)  # Abrir la cámara una vez, al inicio del juego
-    if not cam.isOpened():
-        print("No se pudo abrir la cámara.")
-        return
-    print("¡Bienvenido a Tic-Tac-Toe! Eres el jugador 'X'.")
-    print_board(state)
-    
-    while True:
-        # Turno del jugador humano
-        player_move(state,cam)
-        print("Tu movimiento:")
-        print_board(state)
-        
-        # Verificar si el jugador humano ha ganado
-        if check_winner(state):
-            print(f"¡El jugador {check_winner(state)} ha ganado!")
-            break
-        elif is_board_full(state):
-            print("Es un empate.")
-            break
-
-        # Turno de la IA
-        print("Turno de la IA:")
-        ai_move(state)
-        print_board(state)
-
-        # Verificar si la IA ha ganado
-        if check_winner(state):
-            print(f"¡El jugador {check_winner(state)} ha ganado!")
-            break
-        elif is_board_full(state):
-            print("Es un empate.")
-            break
-    cam.release()  # Liberar la cámara al finalizar
-    cv2.destroyAllWindows()  # Cerrar todas las ventanas
-
-# Inicia el juego
-play_game()
+    main(state, cam)
