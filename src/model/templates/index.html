@@ -5,14 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic-Tac-Toe con Flask</title>
     <style>
-        .html{
+        body {
+            background-color: #ffffff; /* Color de fondo de la página */
+            font-family: Fixed, monospace;
+        }
+
+        h1 {
+            text-align: center; /* Alineación a la izquierda */
+            font-family: Fixed, monospace; /* Fuente Comic Sans MS */
+            font-weight: bold; /* Negrita */
+            font-size: 80px; /* Tamaño de fuente */
+            color: #ff0000; /* Color del texto */
+            /* Efecto de sombra en el texto */
+            text-shadow: -1px 0 #0e0e83, 0 1px #0e0e83, 1px 0 #0e0e83, 0 -1px #0e0e83,
+                         -2px 2px 0 #0e0e83, 2px 2px 0 #0e0e83, 1px 1px #0e0e83,
+                         2px 2px #0e0e83, 3px 3px #0e0e83, 4px 4px #0e0e83, 
+                         5px 5px #0e0e83, 6px 6px #0e0e83, 7px 7px #0e0e83, 
+                         8px 8px #0e0e83, 9px 9px #0e0e83;
+        }
+
+        .html {
             font-size: 17px;
             font-weight: bold;
         }
+
         .container {
             display: flex;
             justify-content: space-between;
         }
+
         .column {
             flex: 50%;
             padding: 20px;
@@ -21,13 +42,12 @@
             flex-direction: column;
             justify-content: center; /* Centra horizontalmente */
         }
-                /* Contenedor para ambas imágenes */
+
+        /* Contenedor para ambas imágenes */
         .image-container {
             position: relative; /* Para contener las imágenes posicionadas */
             width: 300px; /* Ajusta el ancho según tu imagen */
-            /* height: 533.33px; Ajusta la altura según tu imagen */
             align-self: center;
-
         }
 
         /* Imagen de fondo (silueta del celular) */
@@ -38,7 +58,7 @@
             width: 100%; /* La imagen ocupa todo el ancho del contenedor */
             height: 100%; /* La imagen ocupa todo el alto del contenedor */
             z-index: 1; /* Esta imagen estará detrás */
-            opacity: 0.5; /* Opcional: ajusta la opacidad para darle un efecto de sombra o silueta */
+            opacity: 0.5; /* Ajusta la opacidad para darle un efecto de sombra o silueta */
         }
 
         /* Imagen que va delante (la imagen vertical) */
@@ -49,11 +69,13 @@
             width: 80%; /* Ajusta el tamaño para que se ajuste al "celular" */
             z-index: 2; /* Esta imagen estará delante */
         }
+
         .matrix {
             display: grid;
             grid-template-columns: repeat(3, 100px);
             grid-template-rows: repeat(3, 100px);
         }
+
         .matrix div {
             border: 1px solid white;
             display: flex;
@@ -62,58 +84,61 @@
             font-size: 2em;
             color: white;
         }
+
         /* Alternar colores en la matriz */
         .matrix div:nth-child(odd) {
             background-color: #22229b;
         }
+
         .matrix div:nth-child(even) {
             background-color: #d32727;
         }
+
         .buttons {
             margin-top: 20px;
             margin-bottom: 20px;
             display: flex;
             justify-content: space-around;
         }
-        /* From Uiverse.io by Voxybuns */ 
+
+        /* Botones personalizados */
         button {
-        margin-top: 20px;
-        margin-bottom: 20px;
-        /* Variables */
-        --button_radius: 0.75em;
-        --button_color: #e8e8e8;
-        --button_outline_color: #000000;
-        font-size: 17px;
-        font-weight: bold;
-        border: none;
-        border-radius: var(--button_radius);
-        background: var(--button_outline_color);
+            margin-top: 20px;
+            margin-bottom: 20px;
+            --button_radius: 0.75em;
+            --button_color: #e8e8e8;
+            --button_outline_color: #000000;
+            font-size: 17px;
+            font-weight: bold;
+            border: none;
+            border-radius: var(--button_radius);
+            background: var(--button_outline_color);
         }
 
         .button_top {
-        display: block;
-        box-sizing: border-box;
-        border: 2px solid var(--button_outline_color);
-        border-radius: var(--button_radius);
-        padding: 0.75em 1.5em;
-        background: var(--button_color);
-        color: var(--button_outline_color);
-        transform: translateY(-0.2em);
-        transition: transform 0.1s ease;
+            display: block;
+            box-sizing: border-box;
+            border: 2px solid var(--button_outline_color);
+            border-radius: var(--button_radius);
+            padding: 0.75em 1.5em;
+            background: var(--button_color);
+            color: var(--button_outline_color);
+            transform: translateY(-0.2em);
+            transition: transform 0.1s ease;
         }
 
         button:hover .button_top {
-        /* Pull the button upwards when hovered */
-        transform: translateY(-0.33em);
+            transform: translateY(-0.33em);
         }
 
         button:active .button_top {
-        /* Push the button downwards when pressed */
-        transform: translateY(0);
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
+    <h1>Tic Tac Toe</h1> <!-- Título con estilo personalizado -->
+
     <div class="container">
         <div class="column">
             <h2>Cámara</h2>
@@ -173,5 +198,4 @@
         // Ejecutar la función cuando la página se carga
         window.onload = mostrarMatrizEnConsola;
     </script>
-</body>
-</html>
+</
