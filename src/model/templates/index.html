@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe con Flask</title>
+    <style>
+        .html{
+            font-size: 17px;
+            font-weight: bold;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column {
+            flex: 50%;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center; /* Centra horizontalmente */
+        }
+                /* Contenedor para ambas imágenes */
+        .image-container {
+            position: relative; /* Para contener las imágenes posicionadas */
+            width: 300px; /* Ajusta el ancho según tu imagen */
+            /* height: 533.33px; Ajusta la altura según tu imagen */
+            align-self: center;
+
+        }
+
+        /* Imagen de fondo (silueta del celular) */
+        .phone-silhouette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%; /* La imagen ocupa todo el ancho del contenedor */
+            height: 100%; /* La imagen ocupa todo el alto del contenedor */
+            z-index: 1; /* Esta imagen estará detrás */
+            opacity: 0.5; /* Opcional: ajusta la opacidad para darle un efecto de sombra o silueta */
+        }
+
+        /* Imagen que va delante (la imagen vertical) */
+        .foreground-image {
+            position: absolute;
+            top: 10%;  /* Ajusta la posición según lo necesites */
+            left: 10%; /* Ajusta la posición según lo necesites */
+            width: 80%; /* Ajusta el tamaño para que se ajuste al "celular" */
+            z-index: 2; /* Esta imagen estará delante */
+        }
+        .matrix {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+        }
+        .matrix div {
+            border: 1px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: white;
+        }
+        /* Alternar colores en la matriz */
+        .matrix div:nth-child(odd) {
+            background-color: #22229b;
+        }
+        .matrix div:nth-child(even) {
+            background-color: #d32727;
+        }
+        .buttons {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
+        /* From Uiverse.io by Voxybuns */ 
+        button {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        /* Variables */
+        --button_radius: 0.75em;
+        --button_color: #e8e8e8;
+        --button_outline_color: #000000;
+        font-size: 17px;
+        font-weight: bold;
+        border: none;
+        border-radius: var(--button_radius);
+        background: var(--button_outline_color);
+        }
+
+        .button_top {
+        display: block;
+        box-sizing: border-box;
+        border: 2px solid var(--button_outline_color);
+        border-radius: var(--button_radius);
+        padding: 0.75em 1.5em;
+        background: var(--button_color);
+        color: var(--button_outline_color);
+        transform: translateY(-0.2em);
+        transition: transform 0.1s ease;
+        }
+
+        button:hover .button_top {
+        /* Pull the button upwards when hovered */
+        transform: translateY(-0.33em);
+        }
+
+        button:active .button_top {
+        /* Push the button downwards when pressed */
+        transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="column">
+            <h2>Cámara</h2>
+            <div class="image-container">
+                <img src="./recursos/iphone.png" class="phone-silhouette"/>
+                <img src="{{ url_for('video_feed') }}" style="width: 300px;" width="300" class="foreground-image" />
+            </div>
+        </div>
+
+        <div class="column">
+            <h2>Matriz del Juego</h2>
+            <div class="matrix" id="matrix">
+                {% for row in matrix %}
+                    {% for cell in row %}
+                        <div>{{ cell }}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <div class="buttons">
+                <form action="{{ url_for('start_game') }}" method="get">
+                    <button type="submit"><span class="button_top">Empezar Juego</span></button>
+                </form>
+                <form action="{{ url_for('next_round') }}" method="get">
+                    <button type="submit"><span class="button_top">Siguiente Ronda</span></button>
+                </form>
+            </div>
+            {% if message %}
+                <h3>{{ message }}</h3>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Función para obtener el estado actual de la matriz y mostrarlo en la consola
+        function mostrarMatrizEnConsola() {
+            const matrixDiv = document.getElementById("matrix");
+            const rows = matrixDiv.getElementsByClassName("matrix div");
+            let matrix = [[], [], []]; // Matriz 3x3
+
+            let rowIndex = 0;
+            let cellIndex = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                matrix[rowIndex].push(rows[i].innerText || '');  // Agregar cada celda a la matriz
+
+                // Ir a la siguiente fila después de tres columnas
+                if ((i + 1) % 3 === 0) {
+                    rowIndex++;
+                }
+            }
+
+            // Mostrar la matriz en la consola
+            console.log("Matriz actual:");
+            console.table(matrix);
+        }
+
+        // Ejecutar la función cuando la página se carga
+        window.onload = mostrarMatrizEnConsola;
+    </script>
+</body>
+</html>
