@@ -22,10 +22,12 @@
             justify-content: center; /* Centra horizontalmente */
         }
                 /* Contenedor para ambas imágenes */
-                .image-container {
+        .image-container {
             position: relative; /* Para contener las imágenes posicionadas */
-            width: 200px; /* Ajusta el ancho según tu imagen */
-            height: 400px; /* Ajusta la altura según tu imagen */
+            width: 300px; /* Ajusta el ancho según tu imagen */
+            /* height: 533.33px; Ajusta la altura según tu imagen */
+            align-self: center;
+
         }
 
         /* Imagen de fondo (silueta del celular) */
@@ -113,10 +115,12 @@
 </head>
 <body>
     <div class="container">
-        <div class="column image-container">
+        <div class="column">
             <h2>Cámara</h2>
-            <img src="./recursos/iphone.png" class="phone-silhouette">
-            <img src="{{ url_for('video_feed') }}" width="500" class="foreground-image" />
+            <div class="image-container">
+                <img src="./recursos/iphone.png" class="phone-silhouette"/>
+                <img src="{{ url_for('video_feed') }}" style="width: 300px;" width="300" class="foreground-image" />
+            </div>
         </div>
 
         <div class="column">
