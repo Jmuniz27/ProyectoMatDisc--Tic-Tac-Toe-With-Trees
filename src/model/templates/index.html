@@ -162,6 +162,12 @@
             {% if message %}
                 <h3>{{ message }}</h3>
             {% endif %}
+            <h3>Entrada de vídeo</h3>
+            <select id="camSelect" class="html">
+                <option value="0">Webcam integrada</option>
+                <option value="1">DroidCam (driver)</option>
+                <!-- Más opciones o URL MJPEG si lo deseas -->
+            </select>
         </div>
     </div>
 
@@ -190,3 +196,20 @@
     </script>
 </body>
 </html>
+<script>
+    /* dispara el cambio de cámara sin recargar la página */
+    document.getElementById('camSelect').addEventListener('change', e => {
+      fetch('/set_camera', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({src: e.target.value})
+      }).then(r => {
+         if(!r.ok) alert('No se pudo cambiar la cámara');
+         /* Fuerza refresco del <img> para coger el nuevo stream: */
+         const img = document.querySelector('.foreground-image');
+         // añade un parámetro cache-buster
+         img.src = img.src.split('?')[0] + '?t=' + Date.now();
+      });
+    });
+    </script>
+    

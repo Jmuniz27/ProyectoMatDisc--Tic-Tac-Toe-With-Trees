@@ -1,13 +1,36 @@
-from flask import Flask, render_template, Response, redirect, url_for, session
+from flask import Flask, render_template, Response, redirect, url_for, session, request, jsonify
 import cv2
 import time
 from MiniMax import ai_move, check_winner, is_board_full
 from interface.pruebaCam import procesar_imagen
+import threading
+
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # Necesario para usar sesiones
 
-cam = None  # La cámara será inicializada al iniciar el juego
+# --- VARIABLES GLOBALES ---
+cam = None                 # objeto cv2.VideoCapture
+camera_source = 0          # 0 webcam integrada, 1 DroidCam, etc.
+cam_lock = threading.Lock()  # para evitar condiciones de carrera
+
+
+def open_camera(src):
+    """Abre un nuevo dispositivo/URL y devuelve el objeto."""
+    cap = cv2.VideoCapture(src)
+    if not cap.isOpened():
+        raise RuntimeError(f"No se pudo abrir la cámara/URL: {src}")
+    return cap
+
+
+def set_camera(src):
+    """Cierra la cámara actual y abre la nueva (thread-safe)."""
+    global cam, camera_source
+    with cam_lock:
+        camera_source = src
+        if cam is not None:
+            cam.release()
+        cam = open_camera(camera_source)
 
 
 def open_camera_with_retries(max_retries=5, wait_time=2):
@@ -26,22 +49,21 @@ def open_camera_with_retries(max_retries=5, wait_time=2):
 
 def gen_frames():
     global cam
-    if cam is None or not cam.isOpened():
-        if not open_camera_with_retries():
-            return b''  # No pudo abrir la cámara, devuelve vacío
-
     while True:
-        success, frame = cam.read()
+        with cam_lock:
+            if cam is None:
+                time.sleep(0.1)
+                continue
+            success, frame = cam.read()
         if not success:
-            break
-        else:
-            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
-            frame = cv2.flip(frame, 1)
-            frame = cv2.flip(frame, 1)
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            continue
+        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+        frame = cv2.flip(frame, 1)
+        frame = cv2.flip(frame, 1)
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
 @app.route('/')
@@ -121,6 +143,23 @@ def next_round():
         if cam is not None:
             cam.release()
         return redirect(url_for('index'))  # En caso de error, recarga la página
+
+
+# ------------ ENDPOINT NUEVO ---------------
+@app.route('/set_camera', methods=['POST'])
+def set_camera_route():
+    """
+    Cambia la fuente de vídeo.  
+    Recibe 'src' = índice (0,1,2…) o string URL.
+    """
+    src = request.form.get('src', '0')
+    # si es número, conviértelo a int para OpenCV
+    src = int(src) if src.isdigit() else src
+    try:
+        set_camera(src)
+        return ('', 204)           # 204 = No Content → respuesta vacía
+    except RuntimeError as e:
+        return jsonify({'error': str(e)}), 400
 
 
 if __name__ == '__main__':
