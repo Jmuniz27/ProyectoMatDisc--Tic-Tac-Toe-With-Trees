@@ -1,192 +1,219 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe con Flask</title>
-    <style>
-        body {
-            background-color: #ffffff; /* Color de fondo de la página */
-            font-family: Fixed, monospace;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic Tac Toe - TAWS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --taws-blue: #00CFFF;
+      --taws-orange: #FFA300;
+      --bg-color: #081C36;
+      --card-bg: #0F2A4E;
+      --white: #ffffff;
+      --cell-bg: #0b1e36;
+    }
 
-        h1 {
-            text-align: center; /* Alineación a la izquierda */
-            font-family: Fixed, monospace; /* Fuente Comic Sans MS */
-            font-weight: bold; /* Negrita */
-            font-size: 80px; /* Tamaño de fuente */
-            color: #ff0000; /* Color del texto */
-            /* Efecto de sombra en el texto */
-            text-shadow: -1px 0 #0e0e83, 0 1px #0e0e83, 1px 0 #0e0e83, 0 -1px #0e0e83,
-                         -2px 2px 0 #0e0e83, 2px 2px 0 #0e0e83, 1px 1px #0e0e83,
-                         2px 2px #0e0e83, 3px 3px #0e0e83, 4px 4px #0e0e83, 
-                         5px 5px #0e0e83, 6px 6px #0e0e83, 7px 7px #0e0e83, 
-                         8px 8px #0e0e83, 9px 9px #0e0e83;
-        }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(145deg, var(--bg-color), #040D1A);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-        .html {
-            font-size: 17px;
-            font-weight: bold;
-        }
+    .title-block {
+      text-align: center;
+      margin-top: 30px;
+    }
 
-        .container {
-            display: flex;
-            align-items: flex-start; /* Alinea los elementos al inicio del contenedor */
-            gap: 20px; /* Espacio entre los elementos */
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan en una nueva línea si es necesario */
-        }
+    .title-block img {
+      height: 80px;
+      filter: drop-shadow(0 0 10px white);
+      margin-bottom: 10px;
+    }
 
-        .column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    .title-block h1 {
+      font-size: 2.8em;
+      color: var(--taws-blue);
+      text-shadow: 0 0 12px white;
+      margin: 0;
+    }
 
-        .image-container {
-            position: relative;
-            width: 300px;
-        }
+    .layout {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: stretch;
+      gap: 40px;
+      padding: 40px 20px;
+      max-width: 1200px;
+      width: 100%;
+      box-sizing: border-box;
+    }
 
-        .phone-silhouette {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            opacity: 0.5;
-        }
+    .card {
+      background-color: var(--card-bg);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      flex: 1 1 360px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-        .foreground-image {
-            position: absolute;
-            top: 10%;
-            left: 10%;
-            width: 80%;
-            z-index: 2;
-        }
+    h3 {
+      font-size: 1.4em;
+      color: var(--taws-orange);
+      text-shadow: 0 0 8px var(--taws-orange);
+      margin-bottom: 20px;
+      text-align: center;
+    }
 
-        .matrix {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-        }
+    .video-box img {
+      width: 100%;
+      max-width: 340px;
+      border-radius: 20px;
+      border: 3px solid var(--taws-blue);
+      box-shadow: 0 0 16px var(--taws-blue);
+      display: block;
+      margin: auto;
+    }
 
-        .matrix div {
-            border: 1px solid white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            color: white;
-        }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 16px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
 
-        .matrix div:nth-child(odd) {
-            background-color: #22229b;
-        }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: var(--cell-bg);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.6em;
+      font-weight: bold;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
 
-        .matrix div:nth-child(even) {
-            background-color: #d32727;
-        }
+    .cell:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 18px var(--taws-orange);
+    }
 
-        .buttons {
-            margin-top: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-around;
-        }
+    .cell .x {
+      color: var(--taws-blue);
+      text-shadow: 0 0 6px var(--taws-blue), 0 0 12px var(--taws-blue);
+    }
 
-        button {
-            margin-top: 20px;
-            margin-bottom: 20px;
-            --button_radius: 0.75em;
-            --button_color: #e8e8e8;
-            --button_outline_color: #000000;
-            font-size: 17px;
-            font-weight: bold;
-            border: none;
-            border-radius: var(--button_radius);
-            background: var(--button_outline_color);
-        }
+    .cell .o {
+      color: var(--taws-orange);
+      text-shadow: 0 0 6px var(--taws-orange), 0 0 12px var(--taws-orange);
+    }
 
-        .button_top {
-            display: block;
-            box-sizing: border-box;
-            border: 2px solid var(--button_outline_color);
-            border-radius: var(--button_radius);
-            padding: 0.75em 1.5em;
-            background: var(--button_color);
-            color: var(--button_outline_color);
-            transform: translateY(-0.2em);
-            transition: transform 0.1s ease;
-        }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
 
-        button:hover .button_top {
-            transform: translateY(-0.33em);
-        }
+    .buttons button {
+      font-size: 1em;
+      padding: 12px 24px;
+      background: #102940;
+      color: var(--taws-blue);
+      font-weight: bold;
+      border: 2px solid var(--taws-orange);
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--taws-orange);
+      transition: all 0.3s ease;
+    }
 
-        button:active .button_top {
-            transform: translateY(0);
-        }
-    </style>
+    .buttons button:hover {
+      background-color: var(--taws-orange);
+      color: #fff;
+      box-shadow: 0 0 25px var(--taws-orange);
+    }
+
+    .message {
+      background: #0f3c57;
+      border-left: 6px solid var(--taws-blue);
+      padding: 15px 25px;
+      border-radius: 12px;
+      font-size: 1.3em;
+      text-align: center;
+      color: white;
+      box-shadow: 0 0 20px rgba(0, 207, 255, 0.3);
+      margin: 0 auto;
+      max-width: 500px;
+    }
+  </style>
 </head>
+
 <body>
+
+  <!-- Logo y título centrado -->
+  <div class="title-block">
+    <img src="{{ url_for('static', filename='logo_taws.png') }}" alt="Logo TAWS" />
     <h1>Tic Tac Toe</h1>
+  </div>
 
-    <div class="container">
-        <div class="column">
-            <h2>Cámara</h2>
-            <div class="image-container">
-                <img src="./recursos/iphone.png" class="phone-silhouette"/>
-                <img src="{{ url_for('video_feed') }}" style="width: 300px;" class="foreground-image" />
-            </div>
-        </div>
-
-        <div class="column">
-            <h2>Matriz del Juego</h2>
-            <div class="matrix" id="matrix">
-                {% for row in matrix %}
-                    {% for cell in row %}
-                        <div>{{ cell }}</div>
-                    {% endfor %}
-                {% endfor %}
-            </div>
-            <div class="buttons">
-                <form action="{{ url_for('start_game') }}" method="get">
-                    <button type="submit"><span class="button_top">Empezar Juego</span></button>
-                </form>
-                <form action="{{ url_for('next_round') }}" method="get">
-                    <button type="submit"><span class="button_top">Siguiente Ronda</span></button>
-                </form>
-            </div>
-            {% if message %}
-                <h3>{{ message }}</h3>
-            {% endif %}
-        </div>
+  <div class="layout">
+    <!-- Cámara -->
+    <div class="card">
+      <h3>📸 Cámara</h3>
+      <div class="video-box">
+        <img src="{{ url_for('video_feed') }}" alt="Cámara en vivo" />
+      </div>
     </div>
 
-    <script>
-        function mostrarMatrizEnConsola() {
-            const matrixDiv = document.getElementById("matrix");
-            const rows = matrixDiv.getElementsByClassName("matrix div");
-            let matrix = [[], [], []];
+    <!-- Tablero -->
+    <div class="card">
+      <h3>🎮 Tablero</h3>
+      <div class="board">
+        {% for row in matrix %}
+          {% for cell in row %}
+            <div class="cell">
+              {% if cell == 'X' %}
+                <span class="x">X</span>
+              {% elif cell == 'O' %}
+                <span class="o">O</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
 
-            let rowIndex = 0;
-            let cellIndex = 0;
+      <div class="buttons">
+        <form action="{{ url_for('start_game') }}" method="get">
+          <button type="submit">🔁 Nuevo Juego</button>
+        </form>
+        <form action="{{ url_for('next_round') }}" method="get">
+          <button type="submit">📸 Capturar Jugada</button>
+        </form>
+      </div>
 
-            for (let i = 0; i < rows.length; i++) {
-                matrix[rowIndex].push(rows[i].innerText || '');
+      {% if message %}
+        <div class="message">{{ message }}</div>
+      {% endif %}
+    </div>
+  </div>
 
-                if ((i + 1) % 3 === 0) {
-                    rowIndex++;
-                }
-            }
-
-            console.log("Matriz actual:");
-            console.table(matrix);
-        }
-
-        window.onload = mostrarMatrizEnConsola;
-    </script>
 </body>
 </html>

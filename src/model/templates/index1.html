@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic Tac Toe - TAWS Neon</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #00cfff;      /* Cian TAWS */
+      --accent: #ffa300;       /* Naranja TAWS */
+      --bg-dark: #081c36;      /* Fondo profundo */
+      --card: #0f243d;         /* Tarjeta */
+      --text-light: #f0faff;   /* Texto claro */
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at center, var(--bg-dark) 60%, #050e22 100%);
+      color: var(--primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 25px;
+    }
+
+    header img {
+      height: 80px;
+      filter: drop-shadow(0 0 10px var(--primary));
+    }
+
+    header h1 {
+      font-size: 3em;
+      text-shadow: 0 0 12px var(--primary), 0 0 30px var(--primary);
+      margin: 0;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 40px;
+      padding: 40px 20px;
+      width: 100%;
+      max-width: 1200px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background-color: var(--card);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+    }
+
+    h3 {
+      text-align: center;
+      font-size: 1.4em;
+      color: var(--accent);
+      margin-bottom: 20px;
+      text-shadow: 0 0 8px var(--accent);
+    }
+
+    .video-box img {
+      width: 100%;
+      max-width: 340px;
+      height: auto;
+      border-radius: 18px;
+      border: 3px solid var(--primary);
+      box-shadow: 0 0 16px var(--primary);
+      display: block;
+      margin: auto;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 16px;
+      justify-content: center;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: #0a1b2d;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5em;
+      color: var(--primary);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .cell:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 14px var(--accent);
+    }
+
+    .buttons {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .buttons button {
+      font-size: 1em;
+      padding: 12px 24px;
+      background: #0b223a;
+      color: var(--text-light);
+      font-weight: bold;
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      box-shadow: 0 0 12px var(--accent);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .buttons button:hover {
+      background-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 25px var(--accent);
+    }
+
+    .message {
+      margin-top: 25px;
+      background: #132946;
+      border-left: 5px solid var(--primary);
+      padding: 15px 20px;
+      border-radius: 12px;
+      font-size: 1.1em;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(0, 255, 255, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <img src="{{ url_for('static', filename='logo_taws.png') }}" alt="Logo TAWS">
+    <h1>🎮 Tic Tac Toe</h1>
+  </header>
+
+  <div class="grid-container">
+    <!-- Cámara -->
+    <div class="card">
+      <h3>📸 Cámara</h3>
+      <div class="video-box">
+        <img src="{{ url_for('video_feed') }}" alt="Cámara en vivo">
+      </div>
+    </div>
+
+    <!-- Tablero -->
+    <div class="card">
+      <h3>🕹️ Tablero</h3>
+      <div class="board">
+        {% for row in matrix %}
+          {% for cell in row %}
+            <div class="cell">
+              {% if cell == 'X' %}❌{% elif cell == 'O' %}⭕️{% endif %}
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+
+      <div class="buttons">
+        <form action="{{ url_for('start_game') }}" method="get">
+          <button type="submit">🔄 Nuevo Juego</button>
+        </form>
+        <form action="{{ url_for('next_round') }}" method="get">
+          <button type="submit">📸 Capturar Jugada</button>
+        </form>
+      </div>
+
+      {% if message %}
+        <div class="message">{{ message }}</div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
