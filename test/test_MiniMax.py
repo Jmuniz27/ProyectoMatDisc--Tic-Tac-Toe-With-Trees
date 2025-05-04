@@ -1,5 +1,9 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
 import pytest
-from src.model.MinMax import check_winner, is_board_full, ai_move
+from model.MiniMax import check_winner, is_board_full, ai_move
 
 def test_check_winner_horizontal(sample_boards):
     assert check_winner(sample_boards['x_wins']) == 'X'
